@@ -467,7 +467,7 @@ namespace HDB_CGI
         /// <param name="conx"></param>
         /// <param name="sdiString"></param>
         /// <returns></returns>
-        private static DataTable queryHdbInfo(UniConnection conx, string sdiString)
+        public static DataTable queryHdbInfo(UniConnection conx, string sdiString)
         {
             // Initialize stuff...
             var dTab = new DataTable();

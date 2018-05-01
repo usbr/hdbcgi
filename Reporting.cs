@@ -223,11 +223,8 @@ namespace HDB_CGI
 
             int startOfDataRow = Array.IndexOf(outFile, "BEGIN DATA");
 
-            // format == 99
-            if (isAmChart)
-            { htmlOut = HDB_CGI.graphing.writeHTML_amCharts(outFile); }
-            // format == 9
-            else if (isDyGraph)
+            // format == 99 or format == graph
+            if (isAmChart || isDyGraph)
             { htmlOut = HDB_CGI.graphing.writeHTML_dyGraphs(outFile, srchStr); }
             // format == 8
             else if (isHdbWebSeriesQuery)
