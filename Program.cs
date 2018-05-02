@@ -13,7 +13,7 @@ namespace HDB_CGI
     public class cgi
     {
         // Search for [JR] tag to find areas that could use some work
-        public static bool jrDebug = false;
+        public static bool jrDebug = true;
 
         /// <summary>
         /// Container for the available HDBs that the CGI can connect to -- must map 1:1 with hostlist.txt file
@@ -92,9 +92,10 @@ namespace HDB_CGI
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2089&tstp=IN&t1=8/10/2017&t2=8/12/2017&format=json";
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=ecohdb&sdi=100488,100514&tstp=dy&t1=8/1/2017&t2=8/20/2017&format=table";
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2016&t2=08-31-2018&table=R&mrid=&format=json";
-                query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2017&t2=08-31-2018&table=M&mrid=3039,3035&format=1";
+                //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2017&t2=08-31-2018&table=M&mrid=3039,3035&format=1";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=1863,1930,2166,2146&tstp=DY&t1=1/1/1980&t2=1/1/2016&format=json";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lbohdb&sdi=60064,60066&tstp=DY&t1=1/1/2018&t2=4/1/2018&format=1";
+                query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=2166,2146&tstp=HR&t1=2018-01-01T00:00&t2=2018-01-05T23:00&table=R&mrid=&format=2";
 
                 // Initialize output container
                 List<string> outFile = new List<string>();
@@ -282,17 +283,28 @@ namespace HDB_CGI
                 return new List<string> { };
             }
 
+            DateTime t1 = new DateTime();
+            DateTime t2 = new DateTime();
+
+            // support for cgi v0 date format
             Match sYrStr = Regex.Match(srchStr, @"&syer=([0-9\-]+)&");
             Match sMnStr = Regex.Match(srchStr, @"&smon=([0-9\-]+)&");
             Match sDyStr = Regex.Match(srchStr, @"&sday=([0-9\-]+)&");
             Match eYrStr = Regex.Match(srchStr, @"&eyer=([0-9\-]+)&");
             Match eMnStr = Regex.Match(srchStr, @"&emon=([0-9\-]+)&");
             Match eDyStr = Regex.Match(srchStr, @"&eday=([0-9\-]+)&");
+            // support for cgi v1 date format
             Match t1Str = Regex.Match(srchStr, @"&t1=([0-9\0-9-]+)&");
             Match t2Str = Regex.Match(srchStr, @"&t2=([0-9\0-9-]+)&");
-            
-            DateTime t1 = new DateTime();
-            DateTime t2 = new DateTime();
+            // support for iso8601/parse-able date formats
+            Match t1Iso = Regex.Match(srchStr, @"&t1=(.+?)&");
+            Match t2Iso = Regex.Match(srchStr, @"&t2=(.+?)&");
+            bool validISO = false;
+
+            if (DateTime.TryParse(t1Iso.Groups[1].Value, out t1) && DateTime.TryParse(t2Iso.Groups[1].Value, out t2))
+            {
+                validISO = true;
+            }
           
             // Search string has old DateTime patterns
             if (sYrStr.Success && sMnStr.Success && sDyStr.Success && eYrStr.Success && eMnStr.Success && eDyStr.Success)
@@ -339,6 +351,10 @@ namespace HDB_CGI
                             break;
                     }                    
                 }
+            }
+            else if (validISO)
+            {
+
             }
             else
             {
@@ -392,8 +408,9 @@ namespace HDB_CGI
             // Get HDB data
             // Main data query. Uses Stored HDB Procedure "GET_HDB_CGI_DATA" & "GET_HDB_CGI_INFO"
             var downloadTable = queryHdbDataUsingStoredProcedure(hDB, sdiString, sourceTstep,
-                t1.Day.ToString() + "-" + t1.ToString("MMM") + "-" + t1.Year.ToString(),
-                t2.Day.ToString() + "-" + t2.ToString("MMM") + "-" + t2.Year.ToString(),
+                //[JR] don't know why the SPROC wont take the HH:mm arguments in the string -- returns 'QUERY ERROR'
+                t1.ToString("dd-MMM-yyyy"),// HH:mm"),//"-" + t1.ToString("MMM") + "-" + t1.ToString() + " " + t1.ToString("HH:mm"),
+                t2.ToString("dd-MMM-yyyy"),// HH:mm"),//) + "-" + t2.ToString("MMM") + "-" + t2.ToString() + " " + t2.ToString("HH:mm"),
                 sourceTable, mridString);
             // SDI info query
             var sdiInfo = queryHdbInfo(hDB, sdiString);
@@ -440,8 +457,8 @@ namespace HDB_CGI
             cmd.Parameters.Add("o_cursorOutput", UniDbType.Cursor).Direction = ParameterDirection.Output;
             cmd.Parameters.Add("i_sdiList", UniDbType.VarChar).Value = sdiList;
             cmd.Parameters.Add("i_tStep", UniDbType.Char).Value = tStep;
-            cmd.Parameters.Add("i_startDate", UniDbType.Char).Value = startDate;
-            cmd.Parameters.Add("i_endDate", UniDbType.Char).Value = endDate;
+            cmd.Parameters.Add("i_startDate", UniDbType.VarChar).Value = startDate.ToUpper();
+            cmd.Parameters.Add("i_endDate", UniDbType.VarChar).Value = endDate.ToUpper();
             cmd.Parameters.Add("i_sourceTable", UniDbType.Char).Value = sourceTable;
             cmd.Parameters.Add("i_modelRunIds", UniDbType.Char).Value = modelRunIds;
             UniDataReader dr = cmd.ExecuteReader();
