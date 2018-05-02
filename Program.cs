@@ -314,6 +314,7 @@ namespace HDB_CGI
                     Convert.ToInt16(sDyStr.Groups[1].Value));
                 t2 = new DateTime(Convert.ToInt16(eYrStr.Groups[1].Value), Convert.ToInt16(eMnStr.Groups[1].Value),
                         Convert.ToInt16(eDyStr.Groups[1].Value));
+                t2Input = t2;
             }
             // Search string has V1 DateTime patterns
             else if (t1Str.Success)
@@ -322,6 +323,7 @@ namespace HDB_CGI
                 {
                     t1 = DateTime.Parse(t1Str.Groups[1].Value);
                     t2 = DateTime.Parse(t2Str.Groups[1].Value);
+                    t2Input = t2;
                 }
                 else
                 {
@@ -350,7 +352,8 @@ namespace HDB_CGI
                                 DateTime.Now.AddHours(Convert.ToInt16(t1Str.Groups[1].Value)).Hour, 0, 0);
                             t2 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 0);
                             break;
-                    }                    
+                    }
+                    t2Input = t2;
                 }
             }
             // Search string has iso/parse-able DateTime patterns
