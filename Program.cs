@@ -13,7 +13,7 @@ namespace HDB_CGI
     public class cgi
     {
         // Search for [JR] tag to find areas that could use some work
-        public static bool jrDebug = true;
+        public static bool jrDebug = false;
 
         /// <summary>
         /// Container for the available HDBs that the CGI can connect to -- must map 1:1 with hostlist.txt file
@@ -95,7 +95,7 @@ namespace HDB_CGI
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2017&t2=08-31-2018&table=M&mrid=3039,3035&format=1";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=1863,1930,2166,2146&tstp=DY&t1=1/1/1980&t2=1/1/2016&format=json";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lbohdb&sdi=60064,60066&tstp=DY&t1=1/1/2018&t2=4/1/2018&format=1";
-                query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=2166,2146&tstp=HR&t1=2018-01-01T00:00&t2=2018-01-05T23:00&table=R&mrid=&format=2";
+                query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=2166,2146&tstp=HR&t1=2018-01-01T00:00&t2=2018-01-05T11:00&table=R&mrid=&format=2";
 
                 // Initialize output container
                 List<string> outFile = new List<string>();
@@ -285,6 +285,7 @@ namespace HDB_CGI
 
             DateTime t1 = new DateTime();
             DateTime t2 = new DateTime();
+            DateTime t2Input = new DateTime();
 
             // support for cgi v0 date format
             Match sYrStr = Regex.Match(srchStr, @"&syer=([0-9\-]+)&");
@@ -299,14 +300,14 @@ namespace HDB_CGI
             // support for iso8601/parse-able date formats
             Match t1Iso = Regex.Match(srchStr, @"&t1=(.+?)&");
             Match t2Iso = Regex.Match(srchStr, @"&t2=(.+?)&");
-            bool validISO = false;
+            bool isValidISO = false;
 
             if (DateTime.TryParse(t1Iso.Groups[1].Value, out t1) && DateTime.TryParse(t2Iso.Groups[1].Value, out t2))
             {
-                validISO = true;
+                isValidISO = true;
             }
           
-            // Search string has old DateTime patterns
+            // Search string has V0 DateTime patterns
             if (sYrStr.Success && sMnStr.Success && sDyStr.Success && eYrStr.Success && eMnStr.Success && eDyStr.Success)
             {
                 t1 = new DateTime(Convert.ToInt16(sYrStr.Groups[1].Value), Convert.ToInt16(sMnStr.Groups[1].Value),
@@ -314,7 +315,7 @@ namespace HDB_CGI
                 t2 = new DateTime(Convert.ToInt16(eYrStr.Groups[1].Value), Convert.ToInt16(eMnStr.Groups[1].Value),
                         Convert.ToInt16(eDyStr.Groups[1].Value));
             }
-            // Search string has new DateTime patterns
+            // Search string has V1 DateTime patterns
             else if (t1Str.Success)
             {
                 if (t2Str.Success)
@@ -352,16 +353,18 @@ namespace HDB_CGI
                     }                    
                 }
             }
-            else if (validISO)
+            // Search string has iso/parse-able DateTime patterns
+            else if (isValidISO)
             {
-
+                t2Input = t2;
+                t2 = t2.AddDays(1);//hack to grab all t2 data
             }
             else
             {
                 Console.WriteLine("Error: Invalid Query Dates.");
                 return new List<string> { };
             }
-            
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Get SDIs and query information for HDB lookup
             string outFormat = Regex.Match(srchStr, @"&format=([A-Za-z0-9]+)").Groups[1].Value.ToString();
@@ -412,6 +415,10 @@ namespace HDB_CGI
                 t1.ToString("dd-MMM-yyyy"),// HH:mm"),//"-" + t1.ToString("MMM") + "-" + t1.ToString() + " " + t1.ToString("HH:mm"),
                 t2.ToString("dd-MMM-yyyy"),// HH:mm"),//) + "-" + t2.ToString("MMM") + "-" + t2.ToString() + " " + t2.ToString("HH:mm"),
                 sourceTable, mridString);
+            if (isValidISO)
+            {
+                downloadTable = downloadTable.Select("HDB_DATETIME <= #" + t2Input + "#").CopyToDataTable();
+            }
             // SDI info query
             var sdiInfo = queryHdbInfo(hDB, sdiString);
             
