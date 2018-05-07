@@ -8,7 +8,7 @@
 <meta charset="utf-8">
 
 <!--[if gt IE 8 ]--><meta http-equiv="X-UA-Compatible" content="IE=Edge" /><!--<![endif]-->
-<title>BCOO OSG | Lower Colorado Region | Bureau of Reclamation</title>
+<title>HDB CGI</title>
 <meta name="Description" content="Bureau of Reclamation, Lower Colorado Region." />
 <meta name="Keywords" content="Department of the Interior, Bureau of Reclamation, HDB" />
 <meta name="author" content="Bureau of Reclamation, Lower Colorado Region Operations Support Group" />
@@ -36,9 +36,15 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 
 <!-- Styles -->
 <link rel="stylesheet" href="https://www.usbr.gov/css/main.min.css" />
+<link rel="stylesheet" type="text/css" href="jquery.datetimepicker.min.css"/ >
 
 <!-- Modernizr -->
 <script src="https://www.usbr.gov/js/lib/modernizr.js"></script>
+<!-- jQuery -->
+<script src="jquery.js"></script>
+<script type="text/javascript" src="jquery.datetimepicker.full.min.js"></script>
+<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
   
 </head>
 <body>
@@ -98,35 +104,17 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
         <div class="Banner Banner--full">
           <div class="Banner-content">
             <div class="container">
-              <h1>HDB Online Data Query Tool</h1>
-           
+              <h1>HDB Online Data Query Tool</h1>           
             </div>
           </div>
         </div><!-- end Banner -->
 
         <div class="Main-content container">
-          <!-- Breadcrumbs -->
-<div class="Breadcrumbs">
-  <div class="container">
-    <ul class="resetList">
-    <li><a href="https://www.usbr.gov">Reclamation Home</a></li>
-      <li><a href="https://www.usbr.gov/lc/">Lower Colorado Region</a></li>
-      <li>Operations Support Group</li>
-      
-    </ul>
-  </div>
-</div>
-
-
           <div class="Main-well">
-             <center>
-             
-            </center>
             <div align="left">
               <table border="0" cellpadding="2" cellspacing="10" width="100%">
                 <tbody>
-                  <tr bgcolor="ffffff" align="left">
-<br>				  
+                  <tr bgcolor="ffffff" align="left">				  
 				  
 <!-- MAIN CONTENT GOES HERE -->
 <center><h2>Hydrologic Database (HDB) Data Query</h2></center>
@@ -233,9 +221,7 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 	<option value="60076" label="Rock Dam Ditch Right Flow">
 	</datalist>
 	
-	<font color="red">
 	Separate multiple ID numbers with commas and no spaces. (Ex: 1234,5678,...)
-	</font>
 	</blockquote>
 	
 	<strong>Select your desired data frequency:</strong>
@@ -250,9 +236,9 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 	<strong>Select your desired date range (MM-DD-YYYY):</strong>	
 	<blockquote>
 	<strong>From</strong>
-	<input id="startDate" name="t1"/>	
+	<input id="startDate" name="t1" type="text"/>	
 	<strong>To</strong>
-	<input id="endDate" name="t2"/>	
+	<input id="endDate" name="t2" type="text"/>	
 	<br>
 	</blockquote>
 		
@@ -265,6 +251,7 @@ var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga
 	
 	<strong>Select your desired output format:</strong>
 	<blockquote>
+	<input type="radio" name="format" value="88" checked >CSV Download&nbsp;&nbsp;
 	<input type="radio" name="format" value="1">CSV&nbsp;&nbsp;
 	<input type="radio" name="format" value="2" checked >HTML Table&nbsp;&nbsp;
 	<input type="radio" name="format" value="json">JSON&nbsp;&nbsp;
@@ -417,8 +404,6 @@ OR<br>
 
  <!-- #EndLibraryItem --></div>
 
-<!-- jQuery -->
-<script src="https://www.usbr.gov/js/lib/jquery.js"></script>
 
 <script>
 // Only load FastClick if touch events are supported
@@ -429,29 +414,22 @@ if ( Modernizr.touch ) {
     });
   });
 }
-</script>
-
-
-<link href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/themes/base/jquery-ui.css" rel="stylesheet" type="text/css"/>
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8/jquery-ui.min.js"></script>
-	
-<script>
 // Date time pickers
-$(document).ready(function(){$("#startDate").datepicker({
-    dateFormat: 'mm-dd-yy', onSelect: function(dateText, inst) {
-        $('#startDate').val(dateText);
-    }});});
-$(document).ready(function(){$("#endDate").datepicker({
-    dateFormat: 'mm-dd-yy', onSelect: function(dateText, inst) {
-        $('#endDate').val(dateText);
-    }});});
-	
-// Set default dates YYYY-MM-DD
-var t = new Date();
-document.getElementById('endDate').value = t.toISOString().slice(5,10) + "-" + t.toISOString().slice(0,4);
-t.setDate(t.getDate()-30);
-document.getElementById('startDate').value = t.toISOString().slice(5,10) + "-" + t.toISOString().slice(0,4);
+$(document).ready(function(){$("#startDate").datetimepicker({
+	format:'Y-m-d H:i',
+	mask:true // '9999/19/39 29:59' - digit is the maximum possible for a cell
+ });
+ var t = new Date();
+ t.setDate(t.getDate()-30);
+ document.getElementById('startDate').value = t.toISOString().slice(0,4) + "-" + t.toISOString().slice(5,7) + "-" + t.toISOString().slice(8,10) + " 00:00";
+ });
+$(document).ready(function(){$("#endDate").datetimepicker({   
+	format:'Y-m-d H:i',
+	mask:true // '9999/19/39 29:59' - digit is the maximum possible for a cell
+ });
+ var t = new Date();
+ document.getElementById('endDate').value = t.toISOString().slice(0,4) + "-" + t.toISOString().slice(5,7) + "-" + t.toISOString().slice(8,10) + " 00:00";
+ });
 
 // set SDI selection drop-down box
 function changeOptions() {
@@ -530,7 +508,8 @@ window.document.getElementById("lboSelected").onclick = changeOptions;
 // Function to process form submit
 function hdbFormSubmit()
 {
-	var validQuery = true
+	var validQuery = true;
+	var isCsvDload = false;
 	var queryMessage = "";
     var args = $('form').serializeArray();	
 	//console.log(args);	
@@ -567,6 +546,12 @@ function hdbFormSubmit()
 			validQuery = false;
 			queryMessage = queryMessage + "Model Run ID should be a numeric value. "
 		}
+		// Check if format is csv to enable download link
+		if (args[7].value == "88")
+		{			
+			isCsvDload = true;
+		}
+		
 	}
 	else
 	{
@@ -576,9 +561,21 @@ function hdbFormSubmit()
 	
 	// Process form request
 	if (validQuery)
-	{
+	{	
 		var url = "http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?" + $('form').serialize();
-		document.getElementById("formResult").innerHTML = 'Click on this link to process your query in a new window: <br><blockquote><strong><a href="' + url + '" target="_blank">' + url + '</a></strong></blockquote>You may copy and save this link to access the query again at a later time.';
+		url = url.replace("+","T").replace("+","T");
+		url = url.replace("%3A",":").replace("%3A",":");
+		if (isCsvDload)
+		{
+			var fName = new Date().toISOString();
+			document.getElementById("formResult").innerHTML = 'Click on this link to download your request into a csv file: <br><blockquote><strong><a href="' + url + '" download="' + fName + '.csv">Data Download</a></strong></blockquote>';
+			
+			csvDownloadString = 'You may also click on this <a href="' + url + '" download="' + fName + '.csv">link</a> to download the data.';
+		}
+		else
+		{
+			document.getElementById("formResult").innerHTML = 'Click on this link to process your query in a new window: <br><blockquote><strong><a href="' + url + '" target="_blank">' + url + '</a></strong></blockquote>You may copy and save this link to access the query again at a later time. ';
+		}
 	}
 	else
 	{

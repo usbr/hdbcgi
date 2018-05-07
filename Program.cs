@@ -199,6 +199,7 @@ namespace HDB_CGI
         {
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //Oracle DB connection parameters
+            GetHostList();
             string dbServer = hdb;
             var a = hostList.Contains(new string[] { "lchdb2" });
             if (hdbList.IndexOf(dbServer) < 0)
@@ -494,7 +495,7 @@ namespace HDB_CGI
         /// <param name="conx"></param>
         /// <param name="sdiString"></param>
         /// <returns></returns>
-        public static DataTable queryHdbInfo(UniConnection conx, string sdiString)
+        private static DataTable queryHdbInfo(UniConnection conx, string sdiString)
         {
             // Initialize stuff...
             var dTab = new DataTable();
@@ -532,7 +533,7 @@ namespace HDB_CGI
         /// <param name="mridString"></param>
         /// <param name="interval"></param>
         /// <returns></returns>
-        public static string getUniqueSdisFromMTable(UniConnection conx, string mridString, string interval)
+        private static string getUniqueSdisFromMTable(UniConnection conx, string mridString, string interval)
         {
             // Initialize stuff...
             string sdiString = "";
