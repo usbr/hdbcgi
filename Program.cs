@@ -18,7 +18,7 @@ namespace HDB_CGI
         /// <summary>
         /// Container for the available HDBs that the CGI can connect to -- must map 1:1 with hostlist.txt file
         /// </summary>
-        private static List<string> hdbList = new List<string>
+        public static List<string> hdbList = new List<string>
         {
             "lchdb2",
             "uchdb2",
@@ -30,7 +30,7 @@ namespace HDB_CGI
         /// <summary>
         /// Container for the HDB host and log-on information -- populated by hostlist.txt file
         /// </summary>
-        private static List<string[]> hostList = new List<string[]>
+        public static List<string[]> hostList = new List<string[]>
         {
             // new string[] {host, service, port, user, pass}
         };
@@ -124,7 +124,7 @@ namespace HDB_CGI
         /// <summary>
         /// Get hostlist.txt file which contains the specifics for the HDBs that are available for active connections
         /// </summary>
-        private static void GetHostList()
+        public static void GetHostList()
         {
             try
             {
@@ -195,13 +195,12 @@ namespace HDB_CGI
         /// Connects to HDB
         /// </summary>
         /// <returns></returns>
-        private static UniConnection ConnectHDB(string hdb)
+        public static UniConnection ConnectHDB(string hdb)
         {
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             //Oracle DB connection parameters
             GetHostList();
             string dbServer = hdb;
-            var a = hostList.Contains(new string[] { "lchdb2" });
             if (hdbList.IndexOf(dbServer) < 0)
             { throw new Exception("HDB Database not recognized."); }
 
