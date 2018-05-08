@@ -92,10 +92,10 @@ namespace HDB_CGI
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2089&tstp=IN&t1=8/10/2017&t2=8/12/2017&format=json";
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=ecohdb&sdi=100488,100514&tstp=dy&t1=8/1/2017&t2=8/20/2017&format=table";
                 //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2016&t2=08-31-2018&table=R&mrid=&format=json";
-                //query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2017&t2=08-31-2018&table=M&mrid=3039,3035&format=1";
+                query = @"http://localhost:8080/HDB_CGI.com?svr=lchdb2&sdi=2100,2101&tstp=MN&t1=08-01-2017&t2=08-31-2018&table=M&mrid=3039,3035&format=1";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=1863,1930,2166,2146&tstp=DY&t1=1/1/1980&t2=1/1/2016&format=json";
                 //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lbohdb&sdi=60064,60066&tstp=DY&t1=1/1/2018&t2=4/1/2018&format=1";
-                query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=2166,2146&tstp=HR&t1=2018-01-01T00:00&t2=2018-01-05T11:00&table=R&mrid=&format=2";
+                //query = @"http://ibr3lcrsrv01.bor.doi.net:8080/HDB_CGI.com?svr=lchdb2&sdi=25401&tstp=IN&t1=2018-05-07T05:00&t2=2018-05-07T08:00&table=R&mrid=&format=2";
 
                 // Initialize output container
                 List<string> outFile = new List<string>();
@@ -286,6 +286,7 @@ namespace HDB_CGI
 
             DateTime t1 = new DateTime();
             DateTime t2 = new DateTime();
+            DateTime t1Input = new DateTime();
             DateTime t2Input = new DateTime();
 
             // support for cgi v0 date format
@@ -315,6 +316,7 @@ namespace HDB_CGI
                     Convert.ToInt16(sDyStr.Groups[1].Value));
                 t2 = new DateTime(Convert.ToInt16(eYrStr.Groups[1].Value), Convert.ToInt16(eMnStr.Groups[1].Value),
                         Convert.ToInt16(eDyStr.Groups[1].Value));
+                t1Input = t1;
                 t2Input = t2;
             }
             // Search string has V1 DateTime patterns
@@ -324,6 +326,7 @@ namespace HDB_CGI
                 {
                     t1 = DateTime.Parse(t1Str.Groups[1].Value);
                     t2 = DateTime.Parse(t2Str.Groups[1].Value);
+                    t1Input = t1;
                     t2Input = t2;
                 }
                 else
@@ -354,12 +357,14 @@ namespace HDB_CGI
                             t2 = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, DateTime.Now.Hour, 0, 0);
                             break;
                     }
+                    t1Input = t1;
                     t2Input = t2;
                 }
             }
             // Search string has iso/parse-able DateTime patterns
             else if (isValidISO)
             {
+                t1Input = t1;
                 t2Input = t2;
                 t2 = t2.AddDays(1);//hack to grab all t2 data
             }
@@ -421,7 +426,7 @@ namespace HDB_CGI
                 sourceTable, mridString);
             if (isValidISO)
             {
-                downloadTable = downloadTable.Select("HDB_DATETIME <= #" + t2Input + "#").CopyToDataTable();
+                downloadTable = downloadTable.Select("HDB_DATETIME >= #" + t1Input + "# AND HDB_DATETIME <= #" + t2Input + "#").CopyToDataTable();
             }
             // SDI info query
             var sdiInfo = queryHdbInfo(hDB, sdiString);
