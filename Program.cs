@@ -24,7 +24,8 @@ namespace HDB_CGI
             "uchdb2",
             "yaohdb",
             "ecohdb",
-            "lbohdb"
+            "lbohdb",
+            "lchdb"
         };
 
         /// <summary>
